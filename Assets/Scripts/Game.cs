@@ -14,8 +14,9 @@ public class Game : MonoBehaviour
 
     private int _points;
     private bool _isGameStarted;
+    private bool _isSwiped;
     private Vector2 _startTouchPosition;
-    private Vector2 _endSwipePosition;
+    private Vector2 _endTouchPosition;
 
     private void Start()
     {
@@ -25,27 +26,35 @@ public class Game : MonoBehaviour
     private void Update()
     {
         GetInput();
-        var swipeDirection = GetSwipeDirection();
-        if(_isGameStarted)
+        if(_isGameStarted && _isSwiped)
         {
-            _area.OnInput(swipeDirection);
+            var swipeDirection = GetSwipeDirection();
+            var isSwipeEqualsZero = swipeDirection == Vector2.zero;
+
+            if (!isSwipeEqualsZero)
+                _area.OnInput(swipeDirection);
+
+            _isSwiped = false;
         }
     }
 
-    private void StartGame()
+    public void StartGame()
     {
         _resultText.text = "";
         _isGameStarted = true;
         SetPoints(0);
         _area.GenerateArea();
     }
+
     private void OnWin()
     {
         _resultText.text = _winText;
+        _isGameStarted = false;
     }
     private void OnLose()
     {
         _resultText.text = _loseText;
+        _isGameStarted = false;
     }
     private void AddPoints(int value)
     {
@@ -57,27 +66,29 @@ public class Game : MonoBehaviour
         _points = value;
         _scoreText.text = value.ToString();
     }
-    private Vector2 GetSwipeDirection()
-    {
-        var direction = _endSwipePosition - _startTouchPosition;
-
-        if(Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
-            return direction.x > 0 ? Vector2.right : Vector2.left;
-        else if (Mathf.Abs(direction.x) < Mathf.Abs(direction.y))
-            return direction.y > 0 ? Vector2.up : Vector2.down;
-
-        return Vector2.zero;
-    }
     private void GetInput()
     {
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
             _startTouchPosition = Input.mousePosition;
         }
-        else if(Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0))
         {
-            _endSwipePosition = Input.mousePosition;
-            isSwiped = true;
+            _endTouchPosition = Input.mousePosition;
+            _isSwiped = true;
         }
+    }
+    private Vector2 GetSwipeDirection()
+    {
+        var direction = _endTouchPosition - _startTouchPosition;
+        var positiveX = Mathf.Abs(direction.x);
+        var positiveY = Mathf.Abs(direction.y);
+
+        if (positiveX > positiveY)
+            return direction.x > 0 ? Vector2.right : Vector2.left;
+        else if (positiveY > positiveX)
+            return direction.y > 0 ? Vector2.up : Vector2.down;
+
+        return Vector2.zero;
     }
 }
