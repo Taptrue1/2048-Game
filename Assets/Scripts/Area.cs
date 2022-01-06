@@ -9,6 +9,7 @@ public class Area : MonoBehaviour
     [SerializeField] private int _areaSize;
     [SerializeField] private float _cellSize;
     [SerializeField] private float _spacing;
+
     [Header("Other")]
     [SerializeField] private int _startCellsCount;
     [SerializeField] private Cell _cellPrefab;
@@ -25,11 +26,11 @@ public class Area : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public void Init(Action win, Action lose, Action<int> valueChanged)
+    public void Init(Action onWin, Action onLose, Action<int> onValueChanged)
     {
-        _win = win;
-        _lose = lose;
-        _valueChanged = valueChanged;
+        _win = onWin;
+        _lose = onLose;
+        _valueChanged = onValueChanged;
     }
     public void OnInput(Vector2 direction)
     {
@@ -90,7 +91,29 @@ public class Area : MonoBehaviour
     }
     private void CheckGameResult()
     {
+        var lose = true;
 
+        for (int y = 0; y < _areaSize; y++)
+        {
+            for (int x = 0; x < _areaSize; x++)
+            {
+                if (_area[y, x].IsMaxmimal)
+                {
+                    _win?.Invoke();
+                    break;
+                }
+
+                if(lose && _area[y, x].IsEmpty || FindCellToMerge(_area[y,x], Vector2.up)||
+                    FindCellToMerge(_area[y, x], Vector2.down) || FindCellToMerge(_area[y, x], Vector2.right) ||
+                    FindCellToMerge(_area[y, x], Vector2.left))
+                {
+                    lose = false;
+                }
+            }
+        }
+
+        if (lose)
+            _lose?.Invoke();
     }
     private Cell FindCellToMerge(Cell cell, Vector2 direction)
     {
@@ -144,7 +167,7 @@ public class Area : MonoBehaviour
                     emptyCells.Add(_area[y, x]);
 
         if (emptyCells.Count == 0)
-            throw new System.Exception("Нет свободных ячеек");
+            throw new Exception("Нет свободных ячеек");
 
         var value = UnityEngine.Random.Range(0, 10) == 0 ? 2 : 1;
         emptyCells[UnityEngine.Random.Range(0, emptyCells.Count)].SetValue(value);
