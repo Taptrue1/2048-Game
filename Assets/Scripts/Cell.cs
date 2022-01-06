@@ -8,40 +8,39 @@ public class Cell : MonoBehaviour
     public int X { get; private set; }
     public int Y { get; private set; }
 
-    public int Value { get; private set; }
+    public int Value 
+    { 
+        get { return _value; } 
+        private set { _value = value; UpdateCell(); } 
+    }
     public int Points => IsEmpty ? 0 : (int)Mathf.Pow(2, Value);
     public bool IsEmpty => Value == 0;
+    public bool IsMaxmimal => Value == _maxValue;
     public bool IsMerged { get; private set; }
 
     [SerializeField] private Image _image;
     [SerializeField] private TextMeshProUGUI _pointsText;
     [SerializeField] private ColorsConfig _colorsConfig;
 
+    private int _value;
     private Action<int> _valueChanged;
     private const int _maxValue = 11;
 
-    public void Init(int x, int y, Action<int> valueChanged)
+    public void Init(int x, int y, Action<int> onValueChanged)
     {
         X = x;
         Y = y;
-        _valueChanged = valueChanged;
+        _valueChanged = onValueChanged;
     }
     public void MergeWithCell(Cell target)
     {
-        if (target = this)
-            throw new System.Exception("Нельзя совместить плитку с самой собой");
-
         target.IncreaseValue();
         SetValue(0);
-
-        UpdateCell();
     }
     public void MoveToCell(Cell target)
     {
         target.SetValue(Value);
         SetValue(0);
-
-        UpdateCell();
     }
     public void ResetFlags()
     {
@@ -49,8 +48,10 @@ public class Cell : MonoBehaviour
     }
     public void SetValue(int value)
     {
+        if (value < 0) 
+            throw new Exception("Нельзя установить число меньше 0");
+
         Value = value;
-        UpdateCell();
     }
 
     private void IncreaseValue()
@@ -60,7 +61,6 @@ public class Cell : MonoBehaviour
             Value++;
             IsMerged = true;
             _valueChanged?.Invoke(Points);
-            UpdateCell();
         }
     }
     private void UpdateCell()
