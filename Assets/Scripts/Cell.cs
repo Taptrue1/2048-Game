@@ -8,11 +8,7 @@ public class Cell : MonoBehaviour
     public int X { get; private set; }
     public int Y { get; private set; }
 
-    public int Value 
-    { 
-        get { return _value; } 
-        private set { _value = value; UpdateCell(); } 
-    }
+    public int Value { get; private set; }
     public int Points => IsEmpty ? 0 : (int)Mathf.Pow(2, Value);
     public bool IsEmpty => Value == 0;
     public bool IsMaxmimal => Value == _maxValue;
@@ -22,7 +18,7 @@ public class Cell : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _pointsText;
     [SerializeField] private ColorsConfig _colorsConfig;
 
-    private int _value;
+    private CellAnimation _currentAnimation;
     private Action<int> _valueChanged;
     private const int _maxValue = 11;
 
@@ -34,11 +30,13 @@ public class Cell : MonoBehaviour
     }
     public void MergeWithCell(Cell target)
     {
+        CellAnimator.Instance.Move(this, target, true);
         target.IncreaseValue();
         SetValue(0);
     }
     public void MoveToCell(Cell target)
     {
+        CellAnimator.Instance.Move(this, target, false);
         target.SetValue(Value);
         SetValue(0);
     }
@@ -46,12 +44,30 @@ public class Cell : MonoBehaviour
     {
         IsMerged = false;
     }
-    public void SetValue(int value)
+    public void SetValue(int value, bool updateValue = true)
     {
         if (value < 0) 
             throw new Exception("Нельзя установить число меньше 0");
 
         Value = value;
+
+        if(updateValue)
+            UpdateCell();
+    }
+    public void UpdateCell()
+    {
+        _pointsText.text = IsEmpty ? string.Empty : Points.ToString();
+        _pointsText.color = Value < 3 ? _colorsConfig.DarkFontColor : _colorsConfig.LightFontColor;
+        _image.color = _colorsConfig.CellsColors[Value];
+    }
+    public void SetAnimation(CellAnimation animation)
+    {
+        _currentAnimation = animation;
+    }
+    public void CancelAnimation()
+    {
+        if (_currentAnimation != null)
+            _currentAnimation.Destroy();
     }
 
     private void IncreaseValue()
@@ -62,11 +78,5 @@ public class Cell : MonoBehaviour
             IsMerged = true;
             _valueChanged?.Invoke(Points);
         }
-    }
-    private void UpdateCell()
-    {
-        _pointsText.text = IsEmpty ? string.Empty : Points.ToString();
-        _pointsText.color = Value <= 2 ? _colorsConfig.DarkFontColor : _colorsConfig.LightFontColor;
-        _image.color = _colorsConfig.CellsColors[Value];
     }
 }

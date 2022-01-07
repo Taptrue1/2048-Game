@@ -45,7 +45,7 @@ public class Area : MonoBehaviour
             CheckGameResult();
         }
     }
-    public  void GenerateArea()
+    public void GenerateArea()
     {
         if (_area == null)
             CreateArea();
@@ -103,9 +103,10 @@ public class Area : MonoBehaviour
                     break;
                 }
 
-                if(lose && _area[y, x].IsEmpty || FindCellToMerge(_area[y,x], Vector2.up)||
-                    FindCellToMerge(_area[y, x], Vector2.down) || FindCellToMerge(_area[y, x], Vector2.right) ||
-                    FindCellToMerge(_area[y, x], Vector2.left))
+                var canMerge = FindCellToMerge(_area[y, x], Vector2.up) || FindCellToMerge(_area[y, x], Vector2.down) ||
+                    FindCellToMerge(_area[y, x], Vector2.right) || FindCellToMerge(_area[y, x], Vector2.left);
+
+                if (lose && _area[y, x].IsEmpty || canMerge)
                 {
                     lose = false;
                 }
@@ -170,7 +171,9 @@ public class Area : MonoBehaviour
             throw new Exception("Нет свободных ячеек");
 
         var value = UnityEngine.Random.Range(0, 10) == 0 ? 2 : 1;
-        emptyCells[UnityEngine.Random.Range(0, emptyCells.Count)].SetValue(value);
+        var cell = emptyCells[UnityEngine.Random.Range(0, emptyCells.Count)];
+        cell.SetValue(value, false);
+        CellAnimator.Instance.Appear(cell);
     }
     private void CreateArea()
     {
