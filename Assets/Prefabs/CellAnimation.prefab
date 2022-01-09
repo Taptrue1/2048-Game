@@ -225,6 +225,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4307ce9625911b947a3cbc6ff8182a8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _moveDuration: 0.2
+  _scaleDuration: 0.2
   _image: {fileID: 2606856576962036562}
   _pointsText: {fileID: 2606856576942283538}
   _colorsConfig: {fileID: 11400000, guid: 1cf028e426ba99e4d92bbc3f83ecbe1e, type: 2}

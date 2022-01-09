@@ -3,15 +3,10 @@ using DG.Tweening;
 
 public class CellAnimator : MonoBehaviour
 {
-    public static CellAnimator Instance { get; private set; }
-
     [SerializeField] private CellAnimation _cellAnimationPrefab;
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-
         DOTween.Init();
     }
 

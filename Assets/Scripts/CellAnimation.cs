@@ -5,34 +5,36 @@ using DG.Tweening;
 
 public class CellAnimation : MonoBehaviour
 {
+    [Header("Animation Options")]
+    [SerializeField] private float _moveDuration;
+    [SerializeField] private float _scaleDuration;
+    [Space]
     [SerializeField] private Image _image;
     [SerializeField] private TextMeshProUGUI _pointsText;
     [SerializeField] private ColorsConfig _colorsConfig;
 
     private Sequence _sequence;
-    private const float _moveSpeed = .1f;
-    private const float _scaleSpeed = .1f;
 
     public void Move(Cell from, Cell to, bool isMerging)
     {
         from.CancelAnimation();
         to.SetAnimation(this);
 
-        Init(from);
+        SetParameters(from);
         transform.position = from.transform.position;
 
         _sequence = DOTween.Sequence();
-        _sequence.Append(transform.DOMove(to.transform.position, _moveSpeed).SetEase(Ease.InOutQuad));
+        _sequence.Append(transform.DOMove(to.transform.position, _moveDuration).SetEase(Ease.InOutQuad));
 
         if(isMerging)
         {
             _sequence.AppendCallback(() =>
             {
-                Init(to);
+                SetParameters(to);
             });
 
-            _sequence.Append(transform.DOScale(1.2f, _scaleSpeed));
-            _sequence.Append(transform.DOScale(1, _scaleSpeed));
+            _sequence.Append(transform.DOScale(1.2f, _scaleDuration));
+            _sequence.Append(transform.DOScale(1, _scaleDuration));
         }
 
         _sequence.AppendCallback(() =>
@@ -47,20 +49,20 @@ public class CellAnimation : MonoBehaviour
         cell.CancelAnimation();
         cell.SetAnimation(this);
 
-        Init(cell);
+        SetParameters(cell);
 
         transform.position = cell.transform.position;
         transform.localScale = Vector2.zero;
 
         _sequence = DOTween.Sequence();
 
-        _sequence.Append(transform.DOScale(1.2f, _scaleSpeed * 2));
-        _sequence.Append(transform.DOScale(1f, _scaleSpeed * 2));
+        _sequence.Append(transform.DOScale(1.2f, _scaleDuration * 2));
+        _sequence.Append(transform.DOScale(1f, _scaleDuration * 2));
 
         _sequence.AppendCallback(() => 
-        { 
+        {
             cell.UpdateCell();
-            Destroy(); 
+            Destroy();
         });
     }
     public void Destroy()
@@ -69,7 +71,7 @@ public class CellAnimation : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void Init(Cell cell)
+    private void SetParameters(Cell cell)
     {
         _image.color = _colorsConfig.CellsColors[cell.Value];
         _pointsText.color = cell.Value < 3 ? _colorsConfig.DarkFontColor : _colorsConfig.LightFontColor;

@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(RectTransform))]
 public class Area : MonoBehaviour
 {
-    [Header("Area Settings")]
+    [Header("Size Settings")]
     [SerializeField] private int _areaSize;
     [SerializeField] private float _cellSize;
     [SerializeField] private float _spacing;
@@ -16,9 +16,9 @@ public class Area : MonoBehaviour
 
     private Action _win;
     private Action _lose;
-    private Action<int> _valueChanged;
-    private RectTransform _rectTransform;
     private Cell[,] _area;
+    private CellAnimator _animator;
+    private RectTransform _rectTransform;
     private bool _isAnyCellMoved;
 
     private void Awake()
@@ -26,11 +26,12 @@ public class Area : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public void Init(Action onWin, Action onLose, Action<int> onValueChanged)
+    public void Init(Action onWin, Action onLose, Action<int> onValueChanged, CellAnimator animator)
     {
         _win = onWin;
         _lose = onLose;
-        _valueChanged = onValueChanged;
+        _animator = animator;
+        CreateArea(onValueChanged, animator);
     }
     public void OnInput(Vector2 direction)
     {
@@ -47,9 +48,6 @@ public class Area : MonoBehaviour
     }
     public void GenerateArea()
     {
-        if (_area == null)
-            CreateArea();
-
         for (int y = 0; y < _areaSize; y++)
             for (int x = 0; x < _areaSize; x++)
                 _area[y, x].SetValue(0);
@@ -151,12 +149,8 @@ public class Area : MonoBehaviour
     private void ResetCellsFlags()
     {
         for(int y = 0; y < _areaSize; y++)
-        {
             for(int x = 0; x < _areaSize; x++)
-            {
                 _area[y, x].ResetFlags();
-            }
-        }
     }
     private void GenerateCell()
     {
@@ -172,10 +166,11 @@ public class Area : MonoBehaviour
 
         var value = UnityEngine.Random.Range(0, 10) == 0 ? 2 : 1;
         var cell = emptyCells[UnityEngine.Random.Range(0, emptyCells.Count)];
+
         cell.SetValue(value, false);
-        CellAnimator.Instance.Appear(cell);
+        _animator.Appear(cell);
     }
-    private void CreateArea()
+    private void CreateArea(Action<int> valueChanged, CellAnimator animator)
     {
         _area = new Cell[_areaSize, _areaSize];
         SetAreaSize();
@@ -190,8 +185,9 @@ public class Area : MonoBehaviour
             {
                 var cell = Instantiate(_cellPrefab, transform, false);
                 var position = new Vector2(xPosition + offset * x, yPosition - offset * y);
+
                 cell.transform.localPosition = position;
-                cell.Init(x, y, _valueChanged);
+                cell.Init(x, y, valueChanged, animator);
                 _area[y, x] = cell;
             }
         }

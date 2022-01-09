@@ -5,8 +5,9 @@ public class Game : MonoBehaviour
 {
     [Header("Dependencies")]
     [SerializeField] private Area _area;
+    [SerializeField] private CellAnimator _cellAnimator;
 
-    [Header("UI Options")]
+    [Header("UI Settings")]
     [SerializeField] private TextMeshProUGUI _scoreText;
     [SerializeField] private TextMeshProUGUI _resultText;
     [SerializeField] private string _winText;
@@ -20,7 +21,7 @@ public class Game : MonoBehaviour
 
     private void Start()
     {
-        _area.Init(OnWin, OnLose, AddPoints);
+        _area.Init(OnWin, OnLose, AddPoints, _cellAnimator);
         StartGame();
     }
     private void Update()
@@ -42,8 +43,8 @@ public class Game : MonoBehaviour
     {
         _resultText.text = "";
         _isGameStarted = true;
-        SetPoints(0);
         _area.GenerateArea();
+        SetPoints(0);
     }
 
     private void OnWin()

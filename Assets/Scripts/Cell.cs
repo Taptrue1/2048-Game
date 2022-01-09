@@ -18,31 +18,29 @@ public class Cell : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _pointsText;
     [SerializeField] private ColorsConfig _colorsConfig;
 
+    private CellAnimator _animator;
     private CellAnimation _currentAnimation;
     private Action<int> _valueChanged;
     private const int _maxValue = 11;
 
-    public void Init(int x, int y, Action<int> onValueChanged)
+    public void Init(int x, int y, Action<int> onValueChanged, CellAnimator animator)
     {
         X = x;
         Y = y;
         _valueChanged = onValueChanged;
+        _animator = animator;
     }
     public void MergeWithCell(Cell target)
     {
-        CellAnimator.Instance.Move(this, target, true);
+        _animator.Move(this, target, true);
         target.IncreaseValue();
         SetValue(0);
     }
     public void MoveToCell(Cell target)
     {
-        CellAnimator.Instance.Move(this, target, false);
-        target.SetValue(Value);
+        _animator.Move(this, target, false);
+        target.SetValue(Value, false);
         SetValue(0);
-    }
-    public void ResetFlags()
-    {
-        IsMerged = false;
     }
     public void SetValue(int value, bool updateValue = true)
     {
@@ -53,6 +51,10 @@ public class Cell : MonoBehaviour
 
         if(updateValue)
             UpdateCell();
+    }
+    public void ResetFlags()
+    {
+        IsMerged = false;
     }
     public void UpdateCell()
     {
