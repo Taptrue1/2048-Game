@@ -5,29 +5,28 @@ using TMPro;
 
 public class Cell : MonoBehaviour
 {
+    public Action<int> ValueChanged;
+
+    [SerializeField] private Image _image;
+    [SerializeField] private TextMeshProUGUI _pointsText;
+    [SerializeField] private ColorsConfig _colorsConfig;
+
     public int X { get; private set; }
     public int Y { get; private set; }
-
     public int Value { get; private set; }
     public int Points => IsEmpty ? 0 : (int)Mathf.Pow(2, Value);
     public bool IsEmpty => Value == 0;
     public bool IsMaxmimal => Value == _maxValue;
     public bool IsMerged { get; private set; }
 
-    [SerializeField] private Image _image;
-    [SerializeField] private TextMeshProUGUI _pointsText;
-    [SerializeField] private ColorsConfig _colorsConfig;
-
     private CellAnimator _animator;
     private CellAnimation _currentAnimation;
-    private Action<int> _valueChanged;
     private const int _maxValue = 11;
 
-    public void Init(int x, int y, Action<int> onValueChanged, CellAnimator animator)
+    public void Init(int x, int y, CellAnimator animator)
     {
         X = x;
         Y = y;
-        _valueChanged = onValueChanged;
         _animator = animator;
     }
     public void MergeWithCell(Cell target)
@@ -78,7 +77,7 @@ public class Cell : MonoBehaviour
         {
             Value++;
             IsMerged = true;
-            _valueChanged?.Invoke(Points);
+            ValueChanged?.Invoke(Points);
         }
     }
 }

@@ -21,7 +21,11 @@ public class Game : MonoBehaviour
 
     private void Start()
     {
-        _area.Init(OnWin, OnLose, AddPoints, _cellAnimator);
+        _area.Win += OnWin;
+        _area.Lose += OnLose;
+        _area.ValueChanged += AddPoints;
+        _area.Init(_cellAnimator);
+
         StartGame();
     }
     private void Update()

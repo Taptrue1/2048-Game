@@ -5,17 +5,18 @@ using UnityEngine;
 [RequireComponent(typeof(RectTransform))]
 public class Area : MonoBehaviour
 {
+    public Action Win;
+    public Action Lose;
+    public Action<int> ValueChanged;
+
     [Header("Size Settings")]
     [SerializeField] private int _areaSize;
     [SerializeField] private float _cellSize;
     [SerializeField] private float _spacing;
-
     [Header("Other")]
     [SerializeField] private int _startCellsCount;
     [SerializeField] private Cell _cellPrefab;
 
-    private Action _win;
-    private Action _lose;
     private Cell[,] _area;
     private CellAnimator _animator;
     private RectTransform _rectTransform;
@@ -26,12 +27,10 @@ public class Area : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public void Init(Action onWin, Action onLose, Action<int> onValueChanged, CellAnimator animator)
+    public void Init(CellAnimator animator)
     {
-        _win = onWin;
-        _lose = onLose;
         _animator = animator;
-        CreateArea(onValueChanged, animator);
+        CreateArea(ValueChanged, animator);
     }
     public void OnInput(Vector2 direction)
     {
@@ -97,7 +96,7 @@ public class Area : MonoBehaviour
             {
                 if (_area[y, x].IsMaxmimal)
                 {
-                    _win?.Invoke();
+                    Win?.Invoke();
                     break;
                 }
 
@@ -112,7 +111,7 @@ public class Area : MonoBehaviour
         }
 
         if (lose)
-            _lose?.Invoke();
+            Lose?.Invoke();
     }
     private Cell FindCellToMerge(Cell cell, Vector2 direction)
     {
@@ -187,7 +186,8 @@ public class Area : MonoBehaviour
                 var position = new Vector2(xPosition + offset * x, yPosition - offset * y);
 
                 cell.transform.localPosition = position;
-                cell.Init(x, y, valueChanged, animator);
+                cell.ValueChanged += ValueChanged;
+                cell.Init(x, y, animator);
                 _area[y, x] = cell;
             }
         }
